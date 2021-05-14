@@ -13,8 +13,8 @@ import TagScanner from '../lib/tag-scanner';
 import ActionButton from './action-button.component';
 import { background, white } from '../styles/colors';
 
-// const nfcEmulator = '';
-const nfcEmulator = '04:7B:75:82:92:67:121';
+const nfcEmulator = '';
+// const nfcEmulator = '04:7B:75:82:92:67:121';
 
 const _onTagDiscovered = (tag: any) => {
   let parsed = null;
