@@ -1,6 +1,6 @@
 import { StyleSheet, Dimensions } from 'react-native';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -153,7 +153,62 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     paddingBottom: 10,
     paddingTop: 10
-  }
+  },
+  mapContainerView: {
+    backgroundColor: 'white',
+    position: 'absolute',
+    top: Platform.OS == 'ios'? height * 0.1 + 40 : height * 0.1,
+    left: '5%',
+    width: '90%',
+    height: height * 0.9 - 360,
+    padding: 15,
+  },
+  mapView: {
+    width: '100%',
+    height: height * 0.9 - 345,
+  },
+  mapView1: {
+    width: '100%',
+    height: height * 0.9 - 280,
+  },
+  mapView2: {
+    width: '100%',
+    height: height * 0.9 - 235,
+  },
+  actionModalContainerView: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    width: '100%',
+    padding: 0,
+    margin: 0,
+  },
+  actionView: {
+    backgroundColor: 'white',
+    width: '100%',
+    paddingVertical: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 0,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+  },
+  chooseTitle: {
+    color: '#989898',
+    paddingVertical: 8.5,
+    fontSize: 14,
+  },
+  actionItemView: {
+    width: '100%',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderTopWidth: 0.5,
+    borderColor: '#e4e4e4',
+  },
+  actionItemLbl: {
+    color: '#41A1EF',
+    fontSize: 17,
+  },
 });
 
 export default styles;

@@ -88,8 +88,6 @@
 	<string>Give BlueClerk permission to access your photos</string>
 	<key>NSRemindersUsageDescription</key>
 	<string>Allow BlueClerk to access your reminders</string>
-	<key>NSLocationWhenInUseUsageDescription </key>
-	<string>Allow User Usage Description</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>AntDesign.ttf</string>

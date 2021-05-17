@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  Dimensions,
   Text,
   View,
   Alert,
@@ -40,6 +41,8 @@ const VIEW_HISTORY = 'View Job History';
 const COMMENT = 'Add Comment';
 const CANCEL = 'Cancel';
 const RESCHEDULED = 'Reschedule';
+
+const { width, height } = Dimensions.get('window');
 
 export default function TodayJobs({ navigation }: any) {
 
@@ -111,27 +114,25 @@ export default function TodayJobs({ navigation }: any) {
   };
 
   const presentActionSheet = async (selectedJob: any) => {
-    
     const body = {
       jobId: selectedJob._id,
     };
     let response: any;
-      response = await getJobDetails(body);
-      const { status, job } = response.data;
-      console.log('=======', job._id)
-      if (selectedJob.status == 4) {
-        setselectedJob(job);
-        setModalVisible(!isModalVisible);
-      } else {
-        const actionOptions = getActions(job);
-        setShowMapView(!showMapView);
-        setActionOptions(actionOptions);
-        setActionModalVisible(!isActionModalVisible);
-        setselectedJob(job);
-        // setTimeout(() => {
-        //   ActionSheet.current.show()
-        // }, Platform.OS === 'ios' ? 0 : 100);
-      }
+    response = await getJobDetails(body);
+    const { status, job } = response.data;
+    if (selectedJob.status == 4) {
+      setselectedJob(job);
+      setModalVisible(!isModalVisible);
+    } else {
+      const actionOptions = getActions(job);
+      setShowMapView(!showMapView);
+      setActionOptions(actionOptions);
+      setActionModalVisible(!isActionModalVisible);
+      setselectedJob(job);
+      // setTimeout(() => {
+      //   ActionSheet.current.show()
+      // }, Platform.OS === 'ios' ? 0 : 100);
+    }
   };
 
   const refresh = () => {
@@ -436,7 +437,7 @@ export default function TodayJobs({ navigation }: any) {
                 <TouchableOpacity style={[styles.actionItemView, {
                     borderColor: item === 'Cancel'? '#c1c1c1' : '#e1e1e1',
                     borderTopWidth: item === 'Cancel' ? 4 : 0.5,
-                    paddingBottom: item === 'Cancel'? Platform.OS == 'ios'? 25 : 10: 10,
+                    paddingBottom: item === 'Cancel' ? Platform.OS == 'ios' ? 25 : 10 : 10,
                   }]}
                   onPress = {() => handleOptionsClick(index)}
                 >
@@ -446,7 +447,43 @@ export default function TodayJobs({ navigation }: any) {
             })
           }
         </View>
-        {showMapView && <View style={styles.mapContainerView}>
+        <View style={[styles.mapContainerView, {
+          height: actionOptions.length == 6 ? height * 0.9 - 360 : height * 0.9 - 270
+        }]}>
+          <MapView
+            provider="google"
+            region={{
+              latitude: (selectedJob.jobSite && selectedJob.jobSite.location.coordinates[1]) ||
+                (selectedJob.jobLocation && selectedJob.jobLocation.location.coordinates[1]) ||
+                (selectedJob.customer && selectedJob.customer.location.coordinates[1]) ||
+                32.3888811,
+              longitude: (selectedJob.jobSite && selectedJob.jobSite.location.coordinates[0]) ||
+                (selectedJob.jobLocation && selectedJob.jobLocation.location.coordinates[0]) ||
+                (selectedJob.customer && selectedJob.customer.location.coordinates[0]) ||
+                -108.6732501,
+              latitudeDelta: 0.005,
+              longitudeDelta: 0.004,
+            }}
+            style={actionOptions.length == 6 ? styles.mapView : styles.mapView1}
+          >
+            <Marker
+              coordinate={{
+                latitude: (selectedJob.jobSite && selectedJob.jobSite ?.location.coordinates[1]) ||
+                  (selectedJob.jobLocation && selectedJob.jobLocation ?.location.coordinates[1]) ||
+                  (selectedJob.customer && selectedJob.customer.location.coordinates[1]) || 32.3888811,
+                longitude: (selectedJob.jobSite && selectedJob.jobSite ?.location.coordinates[0]) ||
+                  (selectedJob.jobLocation && selectedJob.jobLocation ?.location.coordinates[0]) ||
+                  (selectedJob.customer && selectedJob.customer.location.coordinates[0]) ||
+                  -108.6732501,
+              }}
+              title={'location'}
+            />
+          </MapView>
+        </View>
+        
+        {/* {showMapView && <View style={[styles.mapContainerView, {
+          height: actionOptions.length == 6 ? height * 0.9 - 360 : height * 0.9 - 270
+        }]}>
           {
             selectedJob.jobLocation ? 
               (
@@ -458,7 +495,7 @@ export default function TodayJobs({ navigation }: any) {
                     latitudeDelta: 0.005,
                     longitudeDelta: 0.004,
                   }}
-                  style={styles.mapView}
+                  style={actionOptions.length == 6 ? styles.mapView : styles.mapView1}
                 >
                   <Marker
                     coordinate={{
@@ -468,7 +505,7 @@ export default function TodayJobs({ navigation }: any) {
                     title={'location'}
                   />
                 </MapView>
-              ): selectedJob.customer ?
+              ): selectedJob.customer && selectedJob.customer.location.coordinates.length > 1 ?
               (
                 <MapView
                   provider="google"
@@ -478,7 +515,7 @@ export default function TodayJobs({ navigation }: any) {
                     latitudeDelta: 0.005,
                     longitudeDelta: 0.004,
                   }}
-                  style={styles.mapView}
+                  style={actionOptions.length == 6 ? styles.mapView : styles.mapView1}
                 >
                   <Marker
                     coordinate={{
@@ -492,7 +529,7 @@ export default function TodayJobs({ navigation }: any) {
               (
                 <MapView
                   region={initRegion}
-                  style={styles.mapView}
+                  style={actionOptions.length == 6 ? styles.mapView : styles.mapView1}
                 >
                   <Marker
                     coordinate={initRegion}
@@ -501,45 +538,7 @@ export default function TodayJobs({ navigation }: any) {
                 </MapView>
               )
           }
-
-
-          {/* {
-            selectedJob.customer && selectedJob.customer.location.coordinates.length > 1 ?
-              (
-                <MapView
-                  provider="google"
-                  region={{
-                    latitude: selectedJob.customer.location.coordinates[1],
-                    longitude: selectedJob.customer.location.coordinates[0],
-                    latitudeDelta: 0.0922,
-                    longitudeDelta: 0.0721,
-                  }}
-                  style={styles.mapView}
-                >
-                  <Marker
-                    coordinate={{
-                      latitude: selectedJob.customer.location.coordinates[1],
-                      longitude: selectedJob.customer.location.coordinates[0],
-                      latitudeDelta: 0.0922,
-                      longitudeDelta: 0.0721,
-                    }}
-                    title={'location'}
-                  />
-                </MapView>
-              ): (
-                <MapView
-                  region={initRegion}
-                  style={styles.mapView}
-                >
-                  <Marker
-                    coordinate={initRegion}
-                    title={'location'}
-                  />
-                </MapView>
-              )
-          } */}
-          
-      </View>}
+        </View>} */}
       </Modal>
     </MenuProvider>
   );

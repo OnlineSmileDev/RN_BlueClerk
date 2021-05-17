@@ -19,7 +19,7 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-  [GMSServices provideAPIKey:@"AIzaSyDRRwZvCu04sjhqHvOv43TSn31XB2N4eDgv"];
+  [GMSServices provideAPIKey:@"AIzaSyDRRwZvCu04sjhqHvOv43TSn31XB2N4eDg"];
   RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
   RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge
                                                    moduleName:@"blueclerk_react"

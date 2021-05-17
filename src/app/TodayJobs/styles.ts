@@ -116,15 +116,19 @@ const styles = StyleSheet.create({
   mapContainerView: {
     backgroundColor: 'white',
     position: 'absolute',
-    top: Platform.OS == 'ios'? height * 0.1 + 100 : height * 0.1 + 50,
-    left: '10%',
-    width: '80%',
-    height: height / 3 + 10,
+    top: Platform.OS == 'ios'? height * 0.1 + 40 : height * 0.1 + 10,
+    left: '5%',
+    width: '90%',
+    height: height * 0.9 - 360,
     padding: 15,
   },
   mapView: {
     width: '100%',
-    height: height / 3 - 20,
+    height: height * 0.9 - 390,
+  },
+  mapView1: {
+    width: '100%',
+    height: height * 0.9 - 300,
   },
   actionModalContainerView: {
     flex: 1,
@@ -143,12 +147,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     left: 0,
-    // borderTopRightRadius: 10,
-    // borderTopLeftRadius: 10,
   },
   chooseTitle: {
     color: '#989898',
-    paddingVertical: 8,
+    paddingVertical: 8.5,
     fontSize: 14,
   },
   actionItemView: {

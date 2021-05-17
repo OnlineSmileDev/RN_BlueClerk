@@ -1,13 +1,15 @@
 import React from 'react';
 import {
-  Dimensions, StyleSheet, Text, TouchableOpacity, View,
+  Dimensions, StyleSheet, Text, TouchableOpacity, View, Linking, Platform
 } from 'react-native';
 import moment from 'moment';
-import openMap from 'react-native-open-maps';
+import openMap, { createOpenLink } from 'react-native-open-maps';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { Row } from '../styles/shared-styles';
 import { turquoise, white } from '../styles/colors';
 import Label from './label';
+import { Service } from '../config/services';
+const { getJobDetails } = Service;
 
 const _ = require('lodash');
 
@@ -30,14 +32,60 @@ function Job({
 
   const txtStyle = isToday ? {} : { color: '#999' };
 
-  const getDayTitle = () => date == ''? '': date.format('MM/DD/YYYY');
-  function openJobLocationInMaps() {
+  const getDayTitle = () => date == '' ? '' : date.format('MM/DD/YYYY');
+  
+  async function openJobLocationInMaps() {
+    const body = {
+      jobId: item._id,
+    };
+    let response: any;
+    response = await getJobDetails(body);
+    const { status, job } = response.data;
+
     const coordinatesList = {
-      latitude: (item.jobSite && item.jobSite?.location.coordinates[1]) || (item.jobLocation && item.jobLocation?.location.coordinates[1]) || '',
-      longitude: (item.jobSite && item.jobSite?.location.coordinates[0]) || (item.jobLocation && item.jobLocation?.location.coordinates[0]) || '',
+      latitude: (job.jobSite && job.jobSite ?.location.coordinates[1]) ||
+        (job.jobLocation && job.jobLocation ?.location.coordinates[1]) ||
+        (job.customer && job.customer.location.coordinates[1]) ||
+        '',
+      longitude: (job.jobSite && job.jobSite ?.location.coordinates[0]) ||
+        (job.jobLocation && job.jobLocation ?.location.coordinates[0]) ||
+        (job.customer && job.customer.location.coordinates[0]) ||
+        '',
     };
 
-    return openMap({ ...coordinatesList, zoom: 18 });
+
+    console.log("----@@@1123", job)
+    
+    var street;
+    var state;
+    var city;
+    var zipcode;
+    var name;
+
+    // Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${coordinatesList.latitude},${coordinatesList.longitude}`)
+
+    if (!job.jobsite && !job.jobLocation) {
+      
+      street = job.customer.address.street ? job.customer.address.street : '';
+      state = job.customer.address.state ? job.customer.address.state : '';
+      city = job.customer.address.city ? job.customer.address.city : '';
+      zipcode = job.customer.address.zipCode ? job.customer.address.zipCode : '';
+      Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${street},${city},${state},${zipcode}`)
+      // Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${coordinatesList.latitude},${coordinatesList.longitude}`)
+    } else if (job.jobLocation) {
+      name = job.jobLocation.name ? job.jobLocation.name : '';
+      if (name) {
+        // Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${name}`)
+        Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${coordinatesList.latitude},${coordinatesList.longitude}`)
+      } else {
+        console.log('********')
+        Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${coordinatesList.latitude},${coordinatesList.longitude}`)
+      }
+    } else {
+      console.log('3333%%%%%%%')
+    }
+
+    // Linking.openURL('https://www.google.com/maps/search/?api=1&query=' + coordinatesList.latitude + ',' + coordinatesList.longitude)
   }
 
   const renderStatus = (jobStatus: any) => {
@@ -66,7 +114,7 @@ function Job({
 
     return (
       <View style={{ display: 'flex', flexDirection: 'row' }}>
-        <MaterialIcons name={icon} size={18} color={color} style={styles.completedMark} />
+        <MaterialIcons name={icon} size={18} color={color} style={styles.completedMark}/>
         <Text style={{ color }}>{text}</Text>
       </View>
     );
