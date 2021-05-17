@@ -175,7 +175,6 @@ function Report({ navigation, route }: Props) {
         // this.props.dispatch(setPaymentStatus('checked'))
         Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${street},${city},${state},${zipcode}`)
       } else {
-        console.log('2222--')
       }
 
       // return openMap({ ...coordinatesList, zoom: 18 });
