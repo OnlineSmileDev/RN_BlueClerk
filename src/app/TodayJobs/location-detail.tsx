@@ -397,8 +397,6 @@ class LocationDetail extends Component<Props, any> {
       jobId: this.state.startedJob?._id,
       comment: this.state.comment,
     });
-    // console.warn('new ->', res.data);
-    // console.log('datatatatta', this.nfcTag, this.state.startedJob?._id, this.state.comment);
     if (res.data.status == 1) {
       this.setState({ successComment: true });
       await this._getLocationTagJobs();
@@ -428,113 +426,6 @@ class LocationDetail extends Component<Props, any> {
 
     return status;
   };
-
-  // _renderWorkOrderCard = (job: any) => {
-  //   const item = {
-  //     time: job.job.dateTime,
-  //     taskName: job.job.jobId,
-  //     client: job.job.customer.profile.displayName,
-  //     taskId: `#${job.job.jobId}`,
-  //     isCompleted: true,
-  //   };
-  //   const titleTextColor = item.isCompleted == false ? 'black' : colors.btnTextGrey;
-  //   const statusTextColor = item.isCompleted == false
-  //     ? colors.btnTextPrimary : colors.btnTextOrange;
-  //   const taskIdTextColor = item.isCompleted == false ? colors.btnTextPrimary : colors.btnTextGrey;
-
-  //   return (
-  //     <TouchableOpacity
-  //       style={styles.ItemContainer2}
-  //       onPress={() => this.props.navigation.navigate('WorkOrderPage')}
-  //     >
-  //       {item.isCompleted == true ? (
-  //         <View
-  //           style={{
-  //             flexDirection: 'row',
-  //             alignItems: 'center',
-  //             justifyContent: 'space-between',
-  //           }}
-  //         >
-  //           <Text style={[styles.cardItemContent, { color: colors.btnTextGrey }]}>
-  //             {item.time}
-  //           </Text>
-  //           <View style={{ flexDirection: 'row' }}>
-  //             <Image
-  //               source={require('../../../assets/icons/checkIcon.png')}
-  //               style={{
-  //                 marginHorizontal: 2,
-  //                 resizeMode: 'contain',
-  //               }}
-  //             />
-  //             <Text style={[styles.cardItemContent, { color: statusTextColor }]}>
-  //               COMPLETED
-  //             </Text>
-  //           </View>
-  //         </View>
-  //       ) : (
-  //         <View
-  //           style={{
-  //             flexDirection: 'row',
-  //             alignItems: 'center',
-  //             justifyContent: 'space-between',
-  //           }}
-  //         >
-  //           <Text style={styles.cardItemContent}>{item.time}</Text>
-  //           <Image
-  //             source={require('../../../assets/icons/pointer.png')}
-  //             style={{
-  //               resizeMode: 'contain',
-  //             }}
-  //           />
-  //         </View>
-  //       )}
-
-  //       <View
-  //         style={{
-  //           flexDirection: 'row',
-  //           alignItems: 'center',
-  //           justifyContent: 'flex-start',
-  //         }}
-  //       >
-  //         <Text style={[styles.cardItemTitle, { flex: 1, color: colors.btnTextGrey }]}>
-  //           CLIENT
-  //         </Text>
-  //         <Text style={[styles.cardItemContent, { flex: 3, color: titleTextColor }]}>
-  //           {item.client}
-  //         </Text>
-  //         <Text style={[styles.cardItemContent, { flex: 2, color: titleTextColor }]} />
-  //       </View>
-
-  //       <View
-  //         style={{
-  //           flexDirection: 'row',
-  //           alignItems: 'center',
-  //           justifyContent: 'flex-start',
-  //         }}
-  //       >
-  //         <Text style={[styles.cardItemTitle, { flex: 1, color: colors.btnTextGrey }]}>
-  //           TASK
-  //         </Text>
-  //         <Text style={[styles.cardItemContent, { flex: 3, color: titleTextColor }]}>
-  //           {item.taskName}
-  //         </Text>
-  //         <Text
-  //           style={[
-  //             styles.cardItemContent,
-  //             {
-  //               flex: 2,
-  //               color: taskIdTextColor,
-  //               textAlign: 'right',
-  //               justifyContent: 'flex-end',
-  //             },
-  //           ]}
-  //         >
-  //           {item.taskId}
-  //         </Text>
-  //       </View>
-  //     </TouchableOpacity>
-  //   );
-  // };
 
   _openMenu = () => {
     Keyboard.dismiss();
@@ -566,17 +457,6 @@ class LocationDetail extends Component<Props, any> {
     try {
       const response = await getLocationTagJobs({ nfcTag: this.nfcTag });
       const { jobs } = response.data;
-      // console.log('get-location-tag-jobs', response.data);
-
-      // const current_jobs = [];
-      // for (const job of jobs) {
-      //   if (job.status == 1) {
-      //     current_jobs.push({ value: job.jobId });
-      //   }
-      // }
-
-      // this.setState({ job_drop_down: current_jobs });
-
       if (jobs.length > 0) {
         this.setState({
           locationJobs: jobs,

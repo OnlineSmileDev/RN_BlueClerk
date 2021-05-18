@@ -125,18 +125,11 @@ export default function AllJobs({ navigation }: any) {
     let response: any;
     response = await getJobDetails(body);
     const { status, job } = response.data;
-    console.log("----@@@All Jobs", job)
     const jobActionOptions = getActions(job);
     setActionOptions(jobActionOptions);
     selectedJob2 = job;
     setShowMapView(!showMapView);
     setActionModalVisible(!isActionModalVisible);
-    // setTimeout(
-    //   () => {
-    //     ActionSheet.current.show();
-    //   },
-    //   Platform.OS === 'ios' ? 0 : 100,
-    // );
   };
 
   const getActions = (job: any) => {

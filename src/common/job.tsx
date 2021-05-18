@@ -52,17 +52,12 @@ function Job({
         (job.customer && job.customer.location.coordinates[0]) ||
         '',
     };
-
-
-    console.log("----@@@1123", job)
     
     var street;
     var state;
     var city;
     var zipcode;
     var name;
-
-    // Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${coordinatesList.latitude},${coordinatesList.longitude}`)
 
     if (!job.jobsite && !job.jobLocation) {
       
@@ -71,21 +66,14 @@ function Job({
       city = job.customer.address.city ? job.customer.address.city : '';
       zipcode = job.customer.address.zipCode ? job.customer.address.zipCode : '';
       Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${street},${city},${state},${zipcode}`)
-      // Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${coordinatesList.latitude},${coordinatesList.longitude}`)
     } else if (job.jobLocation) {
       name = job.jobLocation.name ? job.jobLocation.name : '';
       if (name) {
-        // Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${name}`)
         Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${coordinatesList.latitude},${coordinatesList.longitude}`)
       } else {
-        console.log('********')
         Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${coordinatesList.latitude},${coordinatesList.longitude}`)
       }
-    } else {
-      console.log('3333%%%%%%%')
     }
-
-    // Linking.openURL('https://www.google.com/maps/search/?api=1&query=' + coordinatesList.latitude + ',' + coordinatesList.longitude)
   }
 
   const renderStatus = (jobStatus: any) => {

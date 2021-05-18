@@ -63,7 +63,6 @@ function Comment({ navigation, route }: Props) {
     try {
       response = await Service.getJobDetails(body);
       const { status, job } = response.data;
-      console.log('@@@@@', response.data)
       setComment(job.comment?job.comment : '')
       setLoading(false)
     } catch (err) {

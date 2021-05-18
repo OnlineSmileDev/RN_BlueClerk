@@ -114,8 +114,6 @@ function Report({ navigation, route }: Props) {
       response = await Service.getJobDetails(body);
       const { status, job } = response.data;
 
-      console.log(job)
-
       if (status == 1) {
         setJob(job);
         setLoading(false);
@@ -152,10 +150,6 @@ function Report({ navigation, route }: Props) {
           || '',
       };
 
-      console.log(coordinatesList)
-
-      
-
       var location1 = {
         lat: coordinatesList.latitude,
         lng: coordinatesList.longitude,
@@ -165,24 +159,13 @@ function Report({ navigation, route }: Props) {
       const state = job.customer.address.state ? job.customer.address.state : '';
       const city = job.customer.address.city ? job.customer.address.city : '';
       const zipcode = job.customer.address.zipcode ? job.customer.address.zipCode : '';
-      console.log('=====>', job.jobLocation)
-      console.log(`https://www.google.com/maps/search/?api=1&query=${street},${city},${state},${zipcode}`)
-
-
       const canOpen = await Linking.canOpenURL(`https://www.google.com/maps/search/?api=1&query=${street},${city},${state},${zipcode}`)
+
       if (canOpen) {
-        console.log('111--')
-        // this.props.dispatch(setPaymentStatus('checked'))
         Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${street},${city},${state},${zipcode}`)
-      } else {
-      }
-
-      // return openMap({ ...coordinatesList, zoom: 18 });
-      // Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${coordinatesList.latitude},${coordinatesList.longitude}&query_place_id="2609 Howeellwood Way, Side A"`)
-
+      } 
     }
     else {
-      console.log('=====>', job.jobSite)
       const street = location.street ? location.street : '';
       const state = location.state ? location.state : '';
       const city = location.city ? location.city : '';
