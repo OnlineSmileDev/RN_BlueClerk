@@ -8,7 +8,12 @@ workflows:
         instance_type: mac_mini
         environment:
             vars:
-                PACKAGE_NAME: "com.blueclerk;"
+                # GCLOUD_SERVICE_ACCOUNT_CREDENTIALS: Encrypted(...) # <-- Put encrypted CONTENTS of your Gloud crendentials file here
+                PACKAGE_NAME: "com.blueclerk" # <-- Put your package name here e.g. com.domain.myapp
+                # CM_KEYSTORE: Encrypted(...) # <-- Put your encrypted keystore file here
+                # CM_KEYSTORE_PASSWORD: Encrypted(...) # <-- Put your encrypted keystore password here
+                # CM_KEY_ALIAS_PASSWORD: Encrypted(...) # <-- Put your encrypted keystore alias password here
+                # CM_KEY_ALIAS_USERNAME: Encrypted(...) # <-- Put your encrypted keystore alias username here 
             node: latest
         triggering:
             events:
@@ -22,16 +27,48 @@ workflows:
         scripts:
             - name: Install npm dependencies
               script: |
-                npm install
+                                npm install
             - name: Set Android SDK location
               script: |
-                echo "sdk.dir=$ANDROID_SDK_ROOT" > "$FCI_BUILD_DIR/android/local.properties"            
+                                echo "sdk.dir=$ANDROID_SDK_ROOT" > "$FCI_BUILD_DIR/android/local.properties"
+            - name: Set up keystore
+              script: |
+                    echo $CM_KEYSTORE | base64 --decode > /tmp/keystore.keystore
+                    cat >> "$FCI_BUILD_DIR/android/key.properties" <<EOF
+                    storePassword=$CM_KEYSTORE_PASSWORD
+                    keyPassword=$CM_KEY_ALIAS_PASSWORD
+                    keyAlias=$CM_KEY_ALIAS_USERNAME
+                    storeFile=/tmp/keystore.keystore
+                    EOF                                   
             - name: Build Android release
               script: |
+                # Set environment variable so it can be used to increment build number in android/app/build.gradle
+                # Note that tracks can be specified when retrieving latest build number from Google Play, for example:
+                # export NEW_BUILD_NUMBER=$(($(google-play get-latest-build-number --package-name "$PACKAGE_NAME" --tracks=alpha) + 1))
                 export NEW_BUILD_NUMBER=$(($(google-play get-latest-build-number --package-name "$PACKAGE_NAME") + 1))
-                cd android && ./gradlew assembleRelease
+                cd android && ./gradlew assembleRelease                
         artifacts:
             - android/app/build/outputs/**/*.apk
+        publishing:
+            # See the following link for details about email publishing - https://docs.codemagic.io/publishing-yaml/distribution/#email
+            email:
+                recipients:
+                    - user_1@example.com
+                    - user_2@example.com
+                notify:
+                  success: true     # To not receive a notification when a build succeeds
+                  failure: false    # To not receive a notification when a build fails
+            slack: 
+              # See the following link about how to connect your Slack account - https://docs.codemagic.io/publishing-yaml/distribution/#slack
+              channel: '#channel-name'
+              notify_on_build_start: true   # To receive a notification when a build starts
+              notify:
+                success: true               # To receive a notification when a build succeeds
+                failure: false              # To not receive a notification when a build fails
+            google_play:
+              # See the following link for information regarding publishing to Google Play - https://docs.codemagic.io/publishing-yaml/distribution/#google-play
+              credentials: Encrypted(Z0FBQUFBQmdvN29CTlMwbUNwMkJHbE5VVU9PS2tLZGlKZWdZRjVzVTlVTUZnaDFNWHdMRXNDSmhzc0VaSC1HNDcxM0FFTy16aFhjTmFzZ0JUaWc5NnlXYlVBRW92NjZpX01PTkdkRlBHZVkybFVRYjI0YlZSbnB6eFNNRXA1cGxWcHJXZnM3YXFscjJQQ0ZScFZIdk9Ma1MtUFQzQ05SR0FQTURUZ0ZES2NrcHZVN0JCNFN5eHUtYWN6YzN4VU5KQTB3WHhqVFIyb3RUSkVvd0FkaUFmZmVTZl9LRUV0dG5fNl9IQ3ZiamZVaDNPcVlhOTgwU21FaHRVTmQ2VWl3djdzSU9jX1R6M3F1ejJxM2dUUm5sMVlNTVRPWmtSN0U4VHVSeGs4VnkzREZPZ09NWmJMakdHaXkxeF9acEtkSFcxcEFjaGlHcG5uM2ZBTjVVWXBlLXVjVk1pUUpTUUptWnJ6UXhIRkVUamtLNlpjTTdBUFVzOW9uNHJPUXd1UTFLeElqamxvSllER0lhWnRlajFfaFBRcnZNVGV4NlJKTDZCTmlvcGtUZnJpcWRTdk9qa3dQckcwNldiWU9ldlA3ajhGUm5IVnNyMFZja0ZUYVlmd205a3M3djlsdjFsV291aHN1TUF1Z0tLcGRnTm1ZSElVdFdXaEVCdGF5UlpQZ1dfeUR6bU5nZkd6Nkp1a2ZjUWJISE95SUU2R2IyTFVOUTF3QWxRVms2dkJwU21nS09qZXozRmZxTWEtalFjVGlGN2FSWGV1ZGpobUdUR0NRc0VMUFpHN3VNY0xaSkJWcHdQN0V5Zi1fbVp5LXRQQk5lM2hjRWRfNGZyZ2hzdVlpQUpQRGdIOEFfU1psRHkzOVB4Z0V2RzN6Y0R3Yjd0dEROZXVmcFBLZDJZUFV6Nkt3Vi1QaEdxSjNvMW4zOEpIWG1BdmpkTUVMX3didGRndFRxa1VpVDE5QTc4LXk0SEcwc2lHM2tSRUZBYWUyb0NWR0RFNENzVmlkOC1sU3FLVl9YOEVkT3lBTThBV3NOTzh6SXZEMEU2b2lCZldfaUVPc0l0Vm5HVnNEN21fV2QyQXB0TXkxT3hxWmRpRFRrTVJDek90Y0h4OEVWbkRuVkdEd2g5SklDcDRWLWZsTnB5a0ZhMHBudGpRUnl1X2l1SmhHMmMxQUJtUnh0QjhDWGRJbE9NX2sxaXdaeWFDT2RGeThpUDIzTVpyREUtSm9YVUVpWVFiZ25oLS15SXZGdHdXYVU1TXc3NjU0YlZpLUdFYk9PLU85QXEtSmk1YWpuNzRYSVNUaXNScmh4aWdTX1ZUMFRuVFVTb09WNTVVOXNJR1RUbkhFb0xYTWJoc2VZZTZrbEdRNlpFT0hlSThMblZxeW9Cdkd6WVFldDVJeDBHWFhxYWZXdjlVOTVqeHJVR3pjaGtuUnRCM0Q5T0FSdlJYZWFucXNWUGF3SUQwSFNrLVA5MENXZGZuVkV0U1Z3Wk4tdHdObjAxV0puNkE3SVVPQ0tlcXNSbDk5T0xKbkRMOG5PSG9XM3g5VHNBSzdMRFRxRTd2S1RMV1JjcUgzMnE0U2ZuUUtPY1c3aW03VndMSjl3Sk1ZcXdfbmdfZEFDam15YUpHemFLMl9TeG1aeWEzR2JQTlhzUHk0VGczRmNjWGRxTGV2a0hKUnMwc19xVHo0dmFwWFZRbnFhZXZjeVFCUS1kdjFPcUxGZzJOdExHWlV0Vk50bUlBeDNoc29fZTc3Njd2QklZYVoyTEo5U2tjVXBjbXVBc1Ryb2lmSzNmdzFLN3N3Vk0zZmdNN2QyQ08yMnEybWpNUzFjMFp0azV6MlZMTXVILWRvdTdZOUhFNTg4LUxURkp6LVJSZE14aHpOVnRCRWdlVUxjU2haTF9wRDRUNTEwZXFzaHVZclh0R1hfTndTMDktYnpvTGl0eUIwOWVEQjRXWDJJb2tjeV8tYkdVZ2w2Sk9DcWxkSjZ6R0s5WGJnSXNwOFF3cjMzX3AzZ3lOSE5IZjNIek9DVUhIVjVaMXJCUm9Oa01vTWliaFFURWtkanpfdUx1MF9HZmNMbEdOZHh2eUVacFBZN0xKZkdWSmd6VGoxZVBOSFlRU0lMQlNxaldWdm56eHdSMzRFLTJza2NTcWYyRHItM09nR1RTVXNXLWNnYTRmZU5ia1lablMwcWxKc2FxdXlMQTJHNWh3RnVPVnlabUMxV3lUejRUekQwT2o2c3NFYWVnd3JaZnVUSG5oMTc5WWNYd2lWYy1QQ25WM3BkNVAzVmZlZ2kyNEtTdkZkcU9TM0R1NmtpUndGbWJOVXhTYWhodUNUaW80TkZUUGJnSDBxc1dQR3pQTm1BQ1p4bVpIc2t4ckFCRnl3QVMxQ2h2dTZhNWZsSnN6SkdEbmV2aFZldzBtbldhcjk4QWR2MDVOeDRtU2JwbGQ1dFNDSVBhQTd2TE96clJGelVldHJZTU94dDJLVmdWUVRZbXUxT0EycW5WcmJDZTBiQUFQWEtIUl9WNU8tYWN3Q2dJcFZyaGFRZGV6RUVMM3JLMXhaMWV1OUlGN1BOV1NNQ3FGWmh1VVNJb2Z6VUF5UWhkMGV6bnpMQUxGWHUyc2Z5djJ2dTV1cXo2TGwxUnNVYk1zcGh2dnhSemhKeENvRXE4WW1YZGhWbFhFaGZSWTdhTU9uX3NYWmdFdmVMR0tiY0R4c3ZBd0FycGt0OUZwRFlmZHg4SXJhRWcyRXBmd3k4c0drMGRyWEc1em03Y2VBT3dIZWpmN3hsUmFkODJYcnRva2ZuOTdZaENjcDBTUDhENGNIYlJTRDRLUzdqWWhPaE42bGl1U3FJSkpxRzVNd0dqT1BFRFhtejloVEsxUV83ck1vbW9uX2dSNy1ob0pCaGZIbVN4TDFSakY3cl9FY01LN3Q5SUw5TXl2dW1kRFpDdlBjeklKVHlaLVpRT2JxR0NsQURyY1pBMlJMQjZfTFcxeGJqcWNfVmZNYTJPbm5oU2FNNkVzOXF2VFE5NTJkZzF3T2ZQN1R0bHUxOWx3bk4zUjBKSzBTa2J4OTJpTlB1R2JMWVZvSlBJUXoyaFVSNzBMU2VHWXZFU2pFTnBMdHR3dTQ3MzI5c3NLbklvSWdZR2VRVndieTcwWWliYVlsWHVXQmRjeV9sVU9TUkM1Zllnc016WldoV2dqZktaU3c4ZU1EVThaN2VwS05JNkh5aEtBcHNkZFB2MVMySl8yaXYtd25IR055TGZ1STBiWmRIeDNNMVlWQTRpMmpjcDFzRDh4QjBxSC1FS0F0T0lKdEVqUi1GcEs1X1kwVFNYcXVQSC0wU3NPMjM1UkNhblBvY0tMb2tSaE01YVdQamRYSlYxOC15OUFqN0ZmY21VSGpYRlUzWE5tQlF5V2h1NVBqTjdwWUdDQmc2YzRiSHgxZ19qVlhKTlpOT0wzLXI0V09tbkhZaEh3REJkZWxSaks3MGFFZEJPd3RGeEowVG1MQkZUZng1Ukc1Q3l2ejNTRnZjakVwdng3UUl2VjZZQUdRQTlWYUY2cFBvOTJUZWVpb2VWbktfZnZlczV3YnhObVF0QUhTTDhfenBDbmNWWWctS2J3cVR6cmdhRmx5cHQwQU5ZUllIRVYyM3Y4YTNTTi04bW1YczE3WThKUG9EakMtRDh0NXVPTTF6SmZLblI2YXVQVGxBRkRsSlhGeWFWREhsZTJXd0xxNlBQdGo5NlZOenBEOE9sTnF0N1ZFWmNDNE9FdVp4UXhENzZSYnhfbG4zTFl2Y2Y1VW9IMHdiQ3JtajdnM0VveHlQNHNaNWdoM3lWeVdnZ2M5TUhLSUVLTGpfRDA4MTZTRmwxcUxxbXRTcWNESjd5WXc4S0haMTRkLU9qWVMwZS16SGFtVE8wbXlTb3JQQVZQRDVXbUdDVFlkZnRPYVRKS0xwNjh4MndhRDNpWldOTnFUa2p4QlE4eUp4YkpLY3V0NUhpTGt5dTBKWnZKTi03akhQZThlSHhmcEt4NFk9)
+              track: alpha
     react-native-ios:
         name: React Native iOS
         max_build_duration: 120
@@ -40,6 +77,15 @@ workflows:
             vars:
                 XCODE_WORKSPACE: "blueclerk_react.xcworkspace"
                 XCODE_SCHEME: "blueclerk_react"
+                APPLE_ID: Encrypted(...) # <-- Put you encrypted Apple ID here
+                APP_SPECIFIC_PASSWORD: Encrypted(...) # <-- Put your encrypted App Specific Password here. For more information visit: https://support.apple.com/en-us/HT204397
+                # https://appstoreconnect.apple.com/access/api
+                APP_STORE_CONNECT_ISSUER_ID: Encrypted(...) # <-- Put your App Store Connect Issuer Id here
+                APP_STORE_CONNECT_KEY_IDENTIFIER: Encrypted(...) # <-- Put your App Store Connect Key Identifier here
+                APP_STORE_CONNECT_PRIVATE_KEY: Encrypted(...) # <-- Put your App Store Connect Private Key here
+                CERTIFICATE_PRIVATE_KEY: Encrypted(...) # <-- Put your Certificate Private key here
+                BUNDLE_ID: "com.hr.blueclerk2019" # <-- Put your Bundle Id here e.g com.domain.myapp
+                APP_STORE_APP_ID: 1450328521 # <-- Put the app id number here. This is found in App Store Connect > App > General > App Information
             node: latest
             xcode: latest
             cocoapods: default
